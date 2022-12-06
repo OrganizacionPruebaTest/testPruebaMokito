@@ -1,5 +1,6 @@
 package org.minsait.mokito.services;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.minsait.mokito.models.Examen;
@@ -8,6 +9,7 @@ import org.minsait.mokito.repositories.PreguntaRepository;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import javax.management.InvalidApplicationException;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -19,10 +21,8 @@ class ExamenServiceImplTest {
 
     @Mock
     ExamenRepository examenRepository;
-
     @Mock
     PreguntaRepository preguntaRepository;
-
     @InjectMocks
     ExamenServiceImpl examenService;
 
@@ -74,7 +74,12 @@ class ExamenServiceImplTest {
         doThrow(IllegalArgumentException.class).when(preguntaRepository).savePreguntas(anyList());
         Examen examen = Datos.EXAMEN_1;
         examen.setPreguntas(Datos.PREGUNTAS);
+        IllegalArgumentException thrown = Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            examenService.findExamenPorNombreConPreguntas(null);
+            examenService.findExamenPorNombreConPreguntas("");
+        });
 
+        Assertions.assertEquals(IllegalArgumentException.class, thrown.getClass());
         assertThrows(IllegalArgumentException.class, () -> {
             examenService.save(examen);
         });
@@ -117,23 +122,20 @@ class ExamenServiceImplTest {
 
     @Test
     void testSaveExamen() {
+        Examen examen = Datos.EXAMEN_1;
+        examen.setPreguntas(Datos.PREGUNTAS);
 
-        when(examenRepository.findAll()).thenReturn(Datos.EXAMENES);
-        Examen examenNull = examenService.findExamenPorNombreConPreguntas("");
-        assertNull(examenNull);
-        //assertNotNull(examenNull.getPreguntas());
-    }
+        when(examenRepository.save(examen)).thenReturn(examen);
+        Examen examenGuardado = examenService.save(examen);
 
-    @Test
-    void testNoSavePreguntas() {
-        //when(examenRepository.findAll()).thenReturn(Datos.EXAMENES);
-        //when(preguntaRepository.findPreguntasByExamenId(anyLong())).thenReturn(Datos.PREGUNTAS);
-
-        Examen examen2 = examenService.save(Datos.EXAMEN_1);
-
-        assertNotNull(examen2);
-        assertTrue(examen2.getPreguntas().size() == 0);
-        verify(preguntaRepository, never()).savePreguntas(anyList());
+        assertNotNull(examenGuardado);
+        assertEquals(5l, examenGuardado.getId());
+        assertEquals("Matemáticas", examenGuardado.getNombre());
+        assertEquals(3, examenGuardado.getPreguntas().size());
+        assertFalse(examenGuardado.getPreguntas().contains("Geometría"));
+        assertThrows(IllegalArgumentException.class, () -> {
+            examenService.save(null);
+        });
     }
 
     @Test
@@ -152,7 +154,7 @@ class ExamenServiceImplTest {
     }
 
     @Test
-    void testSetters(){
+    void testSetters() {
         Examen examen = Datos.EXAMEN_1;
         examen.setId(1L);
         examen.setNombre("Matemáticas");

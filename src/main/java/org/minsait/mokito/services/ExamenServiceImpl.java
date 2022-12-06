@@ -21,6 +21,10 @@ public class ExamenServiceImpl implements ExamenService {
 
     @Override
     public Examen findExamenPorNombreConPreguntas(String nombre) {
+        if (nombre == null || nombre.isEmpty()) {
+            throw new IllegalArgumentException("El nombre del examen no puede ser nulo o vacío");
+        }
+
         Optional<Examen> examen = findExamenPorNombre(nombre);
 
         if (examen.isPresent()) {
@@ -35,14 +39,16 @@ public class ExamenServiceImpl implements ExamenService {
     @Override
     public Examen save(Examen examen) {
         //Validar si tiene preguntas. Si tiene preguntas guardar el examen con preguntas
-        List<String> preguntas = examen.getPreguntas();
 
-        if (preguntas.size() > 0) {
+        if (examen != null && examen.getPreguntas() != null) {
             //Tiene preguntas
-            this.preguntaRepository.savePreguntas(preguntas);
+            this.preguntaRepository.savePreguntas(examen.getPreguntas());
+            this.examenRepository.save(examen);
         }
 
         //Si no solo guardar examen
+        if (examen == null)
+            throw new IllegalArgumentException("El examen no puede ser nulo");
         this.examenRepository.save(examen);
         return examen;
     }
