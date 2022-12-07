@@ -4,8 +4,6 @@ import org.minsait.mokito.models.Examen;
 import org.minsait.mokito.repositories.ExamenRepository;
 import org.minsait.mokito.repositories.PreguntaRepository;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 public class ExamenServiceImpl implements ExamenService {

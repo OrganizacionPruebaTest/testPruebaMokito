@@ -79,10 +79,15 @@ class ExamenServiceImplTest {
             examenService.findExamenPorNombreConPreguntas("");
         });
 
+
+
         Assertions.assertEquals(IllegalArgumentException.class, thrown.getClass());
         assertThrows(IllegalArgumentException.class, () -> {
             examenService.save(examen);
         });
+
+        Examen examen2=examenService.findExamenPorNombreConPreguntas("Geogradi1");
+        assertNull(examen2);
     }
 
     @Test
